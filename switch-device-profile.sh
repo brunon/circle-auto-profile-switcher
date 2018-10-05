@@ -25,8 +25,6 @@ elif [[ -z $TOKEN ]]; then
 	exit 4
 fi
 
-MAC_ADDRESS=$(ifconfig en0 | awk '/ether/{print $2}' | tr '[:upper:]' '[:lower:]')
-
 PREVIOUS_PID=""
 while :
 do
@@ -36,7 +34,15 @@ do
 		echo "----- $(date) -----"
 		echo "Detected new user active: $CURRENT_USER"
 		echo "Switching to Circle Profile #$USER_PID"
-		curl -ks "https://${CIRCLE_IP}:4567/api/ADD/users/user/relatedDevices/relatedDevice?user.pid=${USER_PID}&mac=${MAC_ADDRESS}&token=${TOKEN}"
+
+		for i in $(ifconfig -l -u)
+		do
+			status=$(ifconfig $i | awk '/status: /{print $2}')
+			if [[ $status == "active" ]]; then
+				mac=$(ifconfig $i | awk '/ether/{print $2}' | tr '[:upper:]' '[:lower:]')
+				curl -ks "https://${CIRCLE_IP}:4567/api/ADD/users/user/relatedDevices/relatedDevice?user.pid=${USER_PID}&mac=${mac}&token=${TOKEN}"
+			fi
+		done
 		echo ; echo
 		PREVIOUS_PID=$USER_PID
 	fi
