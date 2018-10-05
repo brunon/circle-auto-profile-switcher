@@ -2,18 +2,30 @@
 #
 # To install: sudo launchctl load -w /path/to/script
 #
-
-CIRCLE_IP=10.0.1.21
-TOKEN="8CE2DAF22C32-9RxD7dr5XTgg6DTb-20180829.225314"
-
-MAC_ADDRESS=$(ifconfig en0 | awk '/ether/{print $2}' | tr '[:upper:]' '[:lower:]')
-
 MAPPING_FILE=$(dirname $0)/user-mapping.properties
+CONFIG_FILE=$(dirname $0)/circle.cfg
 
 if [[ ! -e $MAPPING_FILE ]]; then
 	echo "Mapping file $MAPPING_FILE does not exist!"
 	exit 1
 fi
+
+if [[ ! -e $CONFIG_FILE ]]; then
+	echo "Config file $CONFIG_FILE does not exist!"
+	exit 2
+else
+	. $CONFIG_FILE
+fi
+
+if [[ -z $CIRCLE_IP ]]; then
+	echo "Missing CIRCLE_IP config in $CONFIG_FILE!"
+	exit 3
+elif [[ -z $TOKEN ]]; then
+	echo "Missing TOKEN config in $CONFIG_FILE!"
+	exit 4
+fi
+
+MAC_ADDRESS=$(ifconfig en0 | awk '/ether/{print $2}' | tr '[:upper:]' '[:lower:]')
 
 PREVIOUS_PID=""
 while :
