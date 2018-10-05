@@ -20,9 +20,10 @@ while :
 do
 	CURRENT_USER=$(stat -f%Su /dev/console)
 	USER_PID=$(grep $CURRENT_USER $MAPPING_FILE | sed 's/.*=//')
-	if [[ $PREVIOUS_PID != $USER_PID ]]; then
+	if [[ -n $USER_PID && $PREVIOUS_PID != $USER_PID ]]; then
+		echo "----- $(date) -----"
 		echo "Detected new user active: $CURRENT_USER"
-		echo "Switching to Circle Profile $USER_PID"
+		echo "Switching to Circle Profile #$USER_PID"
 		curl -ks "https://${CIRCLE_IP}:4567/api/ADD/users/user/relatedDevices/relatedDevice?user.pid=${USER_PID}&mac=${MAC_ADDRESS}&token=${TOKEN}"
 		echo ; echo
 		PREVIOUS_PID=$USER_PID
